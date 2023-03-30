@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,11 +18,6 @@ namespace Tydz6_Zad2_PodglądZdjęcia
         {
             InitializeComponent();
             InitializePaths();
-        }
-
-        private void btnPicLoad_Click(object sender, EventArgs e)
-        {
-
         }
 
         private string _pictureFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PicturePath.txt");
@@ -40,5 +36,42 @@ namespace Tydz6_Zad2_PodglądZdjęcia
             }
         }
 
+        private void btnPicBrowse_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)),
+                Title = "Wyszukaj zdjęcie",
+                CheckFileExists = true,
+                CheckPathExists = true,
+                FilterIndex = 1,
+                RestoreDirectory = true,
+                ReadOnlyChecked = false,
+                ShowReadOnly = true
+            };
+
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+            string separator = string.Empty;
+
+            foreach (var c in codecs)
+            {
+                string codecName = c.CodecName.Substring(8).Replace("Codec", string.Empty).Trim();
+                openFileDialog1.Filter = String.Format("{0}{1}{2} ({3})|{3}", openFileDialog1.Filter, separator, codecName, c.FilenameExtension);
+                separator = "|";
+            }
+
+            openFileDialog1.Filter = String.Format("{0}{1}{2} ({3})|{3}", openFileDialog1.Filter, separator, "Wszystkie pliki", "*.*");
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                tbPicturePath.Text = openFileDialog1.FileName;
+            }
+
+            using (StreamWriter writerExcel = new StreamWriter(_pictureFilePath))
+            {
+                writerExcel.Write(tbPicturePath.Text);
+                writerExcel.Close();
+            }
+        }
     }
 }
